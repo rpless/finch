@@ -132,6 +132,7 @@ lazy val petstore = project
     .configs(IntegrationTest.extend(Test))
     .settings(allSettings)
     .settings(noPublish)
+    .settings(libraryDependencies += "org.spire-math" %% "jawn-argonaut" % "0.8.3")
     .settings(Defaults.itSettings)
     .settings(parallelExecution in IntegrationTest := false)
     .settings(coverageExcludedPackages := "io\\.finch\\.petstore\\.PetstoreApp.*")
@@ -141,7 +142,11 @@ lazy val petstore = project
 lazy val argonaut = project
   .settings(moduleName := "finch-argonaut")
   .settings(allSettings)
-  .settings(libraryDependencies += "io.argonaut" %% "argonaut" % "6.1")
+  .settings(libraryDependencies ++= Seq(
+    "io.argonaut" %% "argonaut" % "6.1",
+    "org.spire-math" %% "jawn-parser" % "0.8.3",
+    "org.spire-math" %% "jawn-argonaut" % "0.8.3"
+  ))
   .dependsOn(core, test % "test")
 
 lazy val jackson = project
