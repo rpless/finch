@@ -22,7 +22,7 @@ private[finch] object Rs {
 
   private[this] val bodyNotPresentInstance: Rerunnable[Output[Nothing]] =
     new Rerunnable[Output[Nothing]] {
-      override val run: Future[Output[Nothing]] = Future.exception(Error.NotPresent(items.BodyItem))
+      override val run: Future[Output[Nothing]] = Future.exception(Error.NotPresent(Endpoint.Meta.Body))
     }
 
   final val OutputHNil: Rerunnable[Output[HNil]] =
@@ -46,11 +46,11 @@ private[finch] object Rs {
     Rerunnable.fromFuture(Future.exception(e))
 
   final def paramNotPresent[A](name: String): Rerunnable[Output[A]] =
-    exception(Error.NotPresent(items.ParamItem(name)))
+    exception(Error.NotPresent(Endpoint.Meta.Param(name)))
 
   final def headerNotPresent[A](name: String): Rerunnable[Output[A]] =
-    exception(Error.NotPresent(items.HeaderItem(name)))
+    exception(Error.NotPresent(Endpoint.Meta.Header(name)))
 
   final def cookieNotPresent[A](name: String): Rerunnable[Output[A]] =
-    exception(Error.NotPresent(items.CookieItem(name)))
+    exception(Error.NotPresent(Endpoint.Meta.Cookie(name)))
 }

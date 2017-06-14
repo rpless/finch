@@ -4,7 +4,6 @@ import com.twitter.finagle.http.exp.Multipart
 import io.catbird.util.Rerunnable
 import io.finch._
 import io.finch.internal.Rs
-import io.finch.items._
 import scala.util.control.NonFatal
 
 private abstract class FileUpload[A](name: String) extends Endpoint[A] {
@@ -30,7 +29,7 @@ private abstract class FileUpload[A](name: String) extends Endpoint[A] {
         }
       }
 
-  final override def item: RequestItem = ParamItem(name)
+  final override def meta: Endpoint.Meta = Endpoint.Meta.Param(name)
   final override def toString: String = name
 }
 

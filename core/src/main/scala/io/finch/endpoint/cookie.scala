@@ -15,7 +15,7 @@ private abstract class Cookie[A](name: String) extends Endpoint[A] {
     case Some(value) =>EndpointResult.Matched(input, present(value))
   }
 
-  final override def item: items.RequestItem = items.CookieItem(name)
+  final override def meta: Endpoint.Meta = Endpoint.Meta.Cookie(name)
   final override def toString: String = s"param($name)"
 }
 

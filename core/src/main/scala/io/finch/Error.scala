@@ -4,7 +4,6 @@ import cats.{Eq, Show}
 import cats.data.NonEmptyList
 import cats.instances.string._
 import cats.syntax.eq._
-import io.finch.items.RequestItem
 import scala.compat.Platform.EOL
 import scala.reflect.ClassTag
 import scala.util.control.NoStackTrace
@@ -49,30 +48,30 @@ object Error {
    * An exception that indicates a required request item (''header'', ''param'', ''cookie'',
    * ''body'') was missing in the request.
    *
-   * @param item the missing request item
+   * @param meta the [[Endpoint.Meta]] for missing part of the request
    */
-  final case class NotPresent(item: RequestItem) extends Error {
-    override def getMessage: String = s"Required ${item.description} not present in the request."
+  final case class NotPresent(meta: Endpoint.Meta) extends Error {
+    override def getMessage: String = s"Required ${meta.description} not present in the request."
   }
 
   /**
    * An exception that indicates a broken [[ValidationRule]] on the request item.
    *
-   * @param item the invalid request item
+   * @param meta the [[Endpoint.Meta]] for the invalid  part of the request
    * @param rule the rule description
    */
-  final case class NotValid(item: RequestItem, rule: String) extends Error {
-    override def getMessage: String = s"Validation failed: ${item.description} $rule."
+  final case class NotValid(meta: Endpoint.Meta, rule: String) extends Error {
+    override def getMessage: String = s"Validation failed: ${meta.description} $rule."
   }
 
   /**
    * An exception that indicates that a request item could be parsed.
    *
-   * @param item the invalid request item
+   * @param meta the [[Endpoint.Meta]] for the part of the request that could not be parsed
    * @param targetType the type the item should be converted into
    * @param cause the cause of the parsing error
    */
-  final case class NotParsed(item: RequestItem, targetType: ClassTag[_], cause: Throwable)
+  final case class NotParsed(meta: Endpoint.Meta, targetType: ClassTag[_], cause: Throwable)
     extends Error {
 
     override def getMessage: String = {
@@ -80,7 +79,7 @@ object Error {
       val className = targetType.runtimeClass.getName
       val simpleName = className.substring(className.lastIndexOf(".")+1)
 
-      s"${item.description} cannot be converted to ${simpleName}: ${cause.getMessage}."
+      s"${meta.description} cannot be converted to $simpleName: ${cause.getMessage}."
     }
 
     override def getCause: Throwable = cause

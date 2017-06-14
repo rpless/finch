@@ -7,7 +7,6 @@ import com.twitter.util.{Return, Throw}
 import io.catbird.util.Rerunnable
 import io.finch._
 import io.finch.internal._
-import io.finch.items._
 import java.nio.charset.Charset
 import scala.reflect.ClassTag
 
@@ -27,7 +26,7 @@ private abstract class FullBody[A] extends Endpoint[A] {
       EndpointResult.Matched(input, output)
     }
 
-  final override def item: RequestItem = items.BodyItem
+  final override def meta: Endpoint.Meta = Endpoint.Meta.Body
 }
 
 private object FullBody {
@@ -51,7 +50,7 @@ private abstract class Body[A, B, CT <: String](
 
   protected def present(content: Buf, cs: Charset): Rerunnable[Output[B]] = d(content, cs) match {
     case Return(r) => Rs.payload(prepare(r))
-    case Throw(t) => Rs.exception(Error.NotParsed(items.BodyItem, ct, t))
+    case Throw(t) => Rs.exception(Error.NotParsed(Endpoint.Meta.Body, ct, t))
   }
 
   final override def toString: String = "body"
@@ -151,7 +150,7 @@ private[finch] trait Bodies {
       else EndpointResult.Matched(input,
         Rerunnable(Output.payload(AsyncStream.fromReader(input.request.reader))))
 
-    final override def item: RequestItem = items.BodyItem
+    final override def meta: Endpoint.Meta = Endpoint.Meta.Body
     final override def toString: String = "asyncBody"
   }
 }

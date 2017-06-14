@@ -62,7 +62,7 @@ trait Endpoint[A] { self =>
   /**
    * Request item (part) that's this endpoint work with.
    */
-  def item: items.RequestItem = items.MultipleItems
+  def meta: Endpoint.Meta = Endpoint.Meta.Product(Seq.empty)
 
   /**
    * Runs this endpoint.
@@ -85,7 +85,7 @@ trait Endpoint[A] { self =>
       case _ => EndpointResult.Skipped
     }
 
-    override def item = self.item
+    override def meta = Endpoint.Meta.Mapped(self.meta, "")
     final override def toString: String = self.toString
   }
 
@@ -116,7 +116,7 @@ trait Endpoint[A] { self =>
       case _ => EndpointResult.Skipped
     }
 
-    override def item = self.item
+    override def meta = Endpoint.Meta.Mapped(self.meta, "")
     final override def toString: String = self.toString
   }
 
@@ -143,7 +143,7 @@ trait Endpoint[A] { self =>
         case _ => EndpointResult.Skipped
       }
 
-      override def item = self.item
+      override def meta = Endpoint.Meta.Mapped(self.meta, "")
       final override def toString: String = self.toString
    }
 
@@ -190,7 +190,7 @@ trait Endpoint[A] { self =>
     }
 
 
-    override def item = self.item
+    override def meta = Endpoint.Meta.Product(Seq(self.meta, other.meta))
     final override def toString: String = self.toString
   }
 
@@ -203,7 +203,7 @@ trait Endpoint[A] { self =>
 
       final def apply(input: Input): Endpoint.Result[pa.Out] = inner(input)
 
-      override def item = items.MultipleItems
+      override def meta = Endpoint.Meta.Product(Seq(self.meta, other.meta))
       final override def toString: String = s"${other.toString} :: ${self.toString}"
     }
 
@@ -221,7 +221,7 @@ trait Endpoint[A] { self =>
       case _ => other(input)
     }
 
-    override def item = items.MultipleItems
+    override def meta = Endpoint.Meta.Coproduct(Seq(self.meta, other.meta))
     final override def toString: String = s"(${self.toString} :+: ${other.toString})"
   }
 
@@ -291,7 +291,7 @@ trait Endpoint[A] { self =>
    */
   final def should(rule: String)(predicate: A => Boolean): Endpoint[A] = mapAsync(a =>
     if (predicate(a)) Future.value(a)
-    else Future.exception(Error.NotValid(self.item, "should " + rule))
+    else Future.exception(Error.NotValid(self.meta, "should " + rule))
   )
 
   /**
@@ -346,7 +346,7 @@ trait Endpoint[A] { self =>
       case _ => EndpointResult.Skipped
     }
 
-    override def item = self.item
+    override def meta = self.meta
     override final def toString: String = self.toString
   }
 
@@ -368,6 +368,24 @@ trait Endpoint[A] { self =>
 object Endpoint {
 
   type Result[A] = EndpointResult[A]
+
+  // Meta Types
+  sealed abstract class Meta(val kind: String, val nameOption: Option[String]) {
+    val description = kind + nameOption.fold("")(" '" + _ + "'")
+  }
+
+  object Meta {
+    final case class Method(method: String) extends Meta("method", Some(method))
+    final case class Path(segment: String) extends Meta("path", Some(segment))
+    final case class Param(name: String) extends Meta("param", Some(name))
+    final case class Header(name: String) extends Meta("header", Some(name))
+    final case class Cookie(name: String) extends Meta("cookie", Some(name))
+    case object Body extends Meta("body", None)
+
+    final case class Coproduct(metas: Seq[Meta]) extends Meta("request", None)
+    final case class Product(metas: Seq[Meta]) extends Meta("request", None)
+    final case class Mapped(meta: Meta, output: String) extends Meta("request", None)
+  }
 
   /**
    * Creates an empty [[Endpoint]] (an endpoint that never matches) for a given type.
@@ -454,7 +472,7 @@ object Endpoint {
   private[this] def notParsed[A](
     e: Endpoint[_], tag: ClassTag[_]
   ): PartialFunction[Throwable, Try[A]] = {
-    case exc => Throw[A](Error.NotParsed(e.item, tag, exc))
+    case exc => Throw[A](Error.NotParsed(e.meta, tag, exc))
   }
 
   /**
@@ -474,7 +492,7 @@ object Endpoint {
   implicit class OptionEndpointOps[A](val self: Endpoint[Option[A]]) extends AnyVal {
     private[finch] def failIfNone: Endpoint[A] = self.mapAsync {
       case Some(value) => Future.value(value)
-      case None => Future.exception(Error.NotPresent(self.item))
+      case None => Future.exception(Error.NotPresent(self.meta))
     }
 
     /**
@@ -501,7 +519,7 @@ object Endpoint {
       self.mapAsync { items =>
         val decoded = items.toList.map(d.apply)
         val errors = decoded.collect {
-          case Throw(e) => Error.NotParsed(self.item, tag, e)
+          case Throw(e) => Error.NotParsed(self.meta, tag, e)
         }
 
         NonEmptyList.fromList(errors) match {
@@ -526,7 +544,7 @@ object Endpoint {
       self.mapAsync { items =>
         val decoded = items.map(d.apply)
         val errors = decoded.collect {
-          case Throw(e) => Error.NotParsed(self.item, tag, e)
+          case Throw(e) => Error.NotParsed(self.meta, tag, e)
         }
 
         NonEmptyList.fromList(errors.toList) match {

@@ -230,7 +230,7 @@ class EndpointSpec extends FinchSpec {
       param("foo"), header("foo"), cookie("foo").map(_.value),
       fileUpload("foo").map(_.fileName), paramsNel("foo").map(_.toList.mkString),
       paramsNel("foor").map(_.toList.mkString), binaryBody.map(new String(_)), stringBody
-    ).foreach { ii => ii(i).awaitValue() shouldBe Some(Throw(Error.NotPresent(ii.item))) }
+    ).foreach { ii => ii(i).awaitValue() shouldBe Some(Throw(Error.NotPresent(Endpoint.Meta.Mapped(ii.meta, "")))) }
   }
 
   it should "maps lazily to values" in {
