@@ -1,8 +1,8 @@
 package io.finch
 
 import java.nio.charset.Charset
-
 import scala.reflect.ClassTag
+
 import cats.Alternative
 import cats.data.{NonEmptyList, Validated}
 import com.twitter.finagle.Service
@@ -290,10 +290,10 @@ trait Endpoint[A] { self =>
    *         Otherwise the future fails with an [[Error.NotValid]] error.
    */
   final def should(rule: String)(predicate: A => Boolean): Endpoint[A] = {
-    validate(a => {
+    validate { (a: A, item) =>
       if (predicate(a)) Validated.Valid(a)
-      else Validated.Invalid(Errors(NonEmptyList.of(Error.NotValid(self.item, "should " + rule))))
-    })
+      else Validated.Invalid(Errors(NonEmptyList.of(Error.NotValid(item, "should " + rule))))
+    }
   }
 
   /**
@@ -333,15 +333,14 @@ trait Endpoint[A] { self =>
   final def shouldNot(rule: ValidationRule[A]): Endpoint[A] = shouldNot(rule.description)(rule.apply)
 
   /** Validates the result of this enpoint using a function that returns a [[cats.data.Validated]].
-    * This is an experimental api that may or may not replace [[Endpoint.should]] and [[Endpoint.shouldNot]] if there
-    * is significant adoption. This is an experimental API and does not deprecate anything.
+    * This should be considered an experimental API and could change without warning.
     *
     * @param validator A Function from the type of the endpoint to a [[cats.data.Validated]]
     * @return An Endpoint that returns the value of the [[cats.data.Validated]] if it's [[cats.data.Validated.Valid]]
     *         Otherwise the future fails with a [[Errors]] containing the accumulated [[Errors]]
     */
-  final def validate(validator: A => Validated[Errors, A]): Endpoint[A] = mapAsync(a =>
-    validator(a).fold(Future.exception, Future.value)
+  final def validate(validator: (A, items.RequestItem) => Validated[Errors, A]): Endpoint[A] = mapAsync(a =>
+    validator(a, self.item).fold(Future.exception, Future.value)
   )
 
   /**
