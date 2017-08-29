@@ -42,11 +42,11 @@ trait FinchSpec extends FlatSpec with Matchers with Checkers with AllInstances
 
   def genNonEmptyString: Gen[String] = Gen.nonEmptyListOf(Gen.alphaChar).map(_.mkString)
 
-  def genRequestItem: Gen[items.RequestItem] = for {
+  def genEndpointMeta: Gen[Endpoint.Meta] = for {
     s <- genNonEmptyString
     i <- Gen.oneOf(
-      items.BodyItem, items.ParamItem(s), items.HeaderItem(s),
-      items.MultipleItems, items.CookieItem(s)
+      Endpoint.Meta.Body, Endpoint.Meta.Param(s), Endpoint.Meta.Header(s),
+      Endpoint.Meta.Cookie(s)
     )
   } yield i
 
@@ -59,7 +59,7 @@ trait FinchSpec extends FlatSpec with Matchers with Checkers with AllInstances
   }
 
   def genError: Gen[Error] = for {
-    i <- genRequestItem
+    i <- genEndpointMeta
     s <- genNonEmptyString
     e <- Gen.oneOf(
       Error.NotPresent(i),
@@ -263,8 +263,8 @@ trait FinchSpec extends FlatSpec with Matchers with Checkers with AllInstances
 
   implicit def arbitraryOutput[A: Arbitrary]: Arbitrary[Output[A]] = Arbitrary(genOutput[A])
 
-  implicit def arbitraryRequestItem: Arbitrary[items.RequestItem] =
-    Arbitrary(genRequestItem)
+  implicit def arbitraryEndpointMeta: Arbitrary[Endpoint.Meta] =
+    Arbitrary(genEndpointMeta)
 
   implicit def arbitraryError: Arbitrary[Error] =
     Arbitrary(genError)

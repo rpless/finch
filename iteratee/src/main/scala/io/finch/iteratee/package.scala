@@ -6,7 +6,7 @@ import com.twitter.io._
 import com.twitter.util.Future
 import io.catbird.util._
 import io.finch.internal._
-import io.finch.items.RequestItem
+import io.finch.Endpoint.Meta
 import io.iteratee.{Enumerator, Iteratee}
 import io.iteratee.twitter.FutureModule
 import shapeless.Witness
@@ -46,7 +46,7 @@ package object iteratee extends IterateeInstances {
         }
       }
 
-      final override def item: RequestItem = items.BodyItem
+      final override def meta: Meta = Meta.Body
       final override def toString: String = "enumeratorBody"
     }
   }

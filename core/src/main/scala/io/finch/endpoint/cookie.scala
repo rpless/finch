@@ -4,6 +4,7 @@ import com.twitter.finagle.http.{Cookie => FinagleCookie}
 import io.catbird.util.Rerunnable
 import io.finch._
 import io.finch.internal._
+import io.finch.Endpoint.Meta
 
 private abstract class Cookie[A](name: String) extends Endpoint[A] {
 
@@ -12,11 +13,11 @@ private abstract class Cookie[A](name: String) extends Endpoint[A] {
 
   def apply(input: Input): Endpoint.Result[A] = input.request.cookies.get(name) match {
     case None => EndpointResult.Matched(input, missing(name))
-    case Some(value) =>EndpointResult.Matched(input, present(value))
+    case Some(value) => EndpointResult.Matched(input, present(value))
   }
 
-  final override def item: items.RequestItem = items.CookieItem(name)
-  final override def toString: String = s"param($name)"
+  final override def meta: Meta = Meta.Cookie(name)
+  final override def toString: String = s"cookie($name)"
 }
 
 private object Cookie {

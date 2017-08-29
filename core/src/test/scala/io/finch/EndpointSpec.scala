@@ -226,11 +226,22 @@ class EndpointSpec extends FinchSpec {
   it should "throw NotPresent if an item is not found" in {
     val i = Input.get("/")
 
+    Seq(param("foo"), header("foo"), stringBody).foreach { ii =>
+      ii(i).awaitValue() shouldBe Some(Throw(Error.NotPresent(ii.meta)))
+    }
+  }
+
+  it should "throw NotPresent if an item is not found in a mapped value" in {
+    val i = Input.get("/")
+
     Seq(
-      param("foo"), header("foo"), cookie("foo").map(_.value),
+      cookie("foo").map(_.value),
       fileUpload("foo").map(_.fileName), paramsNel("foo").map(_.toList.mkString),
-      paramsNel("foor").map(_.toList.mkString), binaryBody.map(new String(_)), stringBody
-    ).foreach { ii => ii(i).awaitValue() shouldBe Some(Throw(Error.NotPresent(ii.item))) }
+      paramsNel("foor").map(_.toList.mkString), binaryBody.map(new String(_))
+    ).foreach { ii =>
+      val extractMappedInMeta = ii.meta.asInstanceOf[Endpoint.Meta.Mapped].meta
+      ii(i).awaitValue() shouldBe Some(Throw(Error.NotPresent(extractMappedInMeta)))
+    }
   }
 
   it should "maps lazily to values" in {

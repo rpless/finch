@@ -3,6 +3,7 @@ package io.finch.endpoint
 import cats.data.NonEmptyList
 import io.finch._
 import io.finch.internal.Rs
+import io.finch.Endpoint.Meta
 
 private abstract class Param[A](name: String) extends Endpoint[A] {
 
@@ -17,7 +18,7 @@ private abstract class Param[A](name: String) extends Endpoint[A] {
       case Some(value) => present(input, value)
     }
 
-  final override def item: items.RequestItem = items.ParamItem(name)
+  final override def meta: Meta= Meta.Param(name)
   final override def toString: String = s"param($name)"
 }
 
@@ -56,7 +57,7 @@ private abstract class Params[A](name: String) extends Endpoint[A] {
     case value if value.isEmpty => missing(input, name)
     case value => present(input, value)
   }
-  final override def item: items.RequestItem = items.ParamItem(name)
+  final override def meta: Endpoint.Meta = Endpoint.Meta.Param(name)
   final override def toString: String = s"params($name)"
 }
 

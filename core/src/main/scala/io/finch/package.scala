@@ -11,17 +11,6 @@ package object finch extends Endpoints
     with ValidationRules
     with io.finch.syntax.EndpointMappers {
 
-  object items {
-    sealed abstract class RequestItem(val kind: String, val nameOption:Option[String] = None) {
-      val description = kind + nameOption.fold("")(" '" + _ + "'")
-    }
-    final case class ParamItem(name: String) extends RequestItem("param", Some(name))
-    final case class HeaderItem(name: String) extends RequestItem("header", Some(name))
-    final case class CookieItem(name: String) extends RequestItem("cookie", Some(name))
-    case object BodyItem extends RequestItem("body")
-    case object MultipleItems extends RequestItem("request")
-  }
-
   object Application {
     type Json = Witness.`"application/json"`.T
     type Xml = Witness.`"application/xml"`.T

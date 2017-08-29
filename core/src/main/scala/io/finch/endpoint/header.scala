@@ -2,7 +2,7 @@ package io.finch.endpoint
 
 import io.finch._
 import io.finch.internal._
-import io.finch.items._
+import io.finch.Endpoint.Meta
 
 private abstract class Header[A](name: String) extends Endpoint[A] {
 
@@ -15,7 +15,7 @@ private abstract class Header[A](name: String) extends Endpoint[A] {
       case value => present(input, value)
     }
 
-  final override def item: RequestItem = items.HeaderItem(name)
+  final override def meta: Meta = Meta.Header(name)
   final override def toString: String = s"header($name)"
 }
 
