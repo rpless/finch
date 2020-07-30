@@ -12,9 +12,9 @@ _contributing process_ looks as follows:
 
 ## Pick an issue
 
-* On [Waffle][5], pick any issue from column "Ready"
-* On Github, leave a comment on the issue you picked to notify others that the issues is taken
-* On [Gitter][6] or Github, ask any question you may have while working on the issue
+* On [Github Issues][5] pick an issue. Issues with the tag `easy` or `help wanted` are good first-time tickets.
+* On Github, leave a comment on the issue you picked to notify others that the issue is in progress.
+* On [Gitter][6] or Github, ask any question you may have while working on the issue.
 
 ## Write Code
 Finch follows the [Effective Scala][1] code style guide. When in doubt, look around the codebase and see how it's done
@@ -34,13 +34,16 @@ Finch uses both [ScalaTest][2] and [ScalaCheck][3] with the following settings:
 * An assertion in tests should be written with `x shouldBe y`
 * An assertion in properties (inside `check`) should be written with `===`
 * Exceptions should be intercepted with `an [Exception] shouldBe thrownBy(x)`
+* Run `sbt validate` to ensure that all tests and style checks are passing
 
 ## Write Docs
 Write clean and simple docs in the `docs` folder.
 
 ## Submit a PR
 * PR should be submitted from a separate branch (use `git checkout -b "fix-123"`)
-* PR should generally contain only one commit (use `git commit --amend` and `git --force push` or [squash][4] existing commits into one)
+* PR should ideally contain only one commit, however it is ok to have multiple commits as the PR evolves
+  * You can use `git commit --amend` and `git --force push` or [squash][4] existing commits into one, OR
+  * A maintainer can squash the PR's commits on merge
 * PR should not decrease the code coverage more than by 1%
 * PR's commit message should use present tense and be capitalized properly (i.e., `Fix #123: Add tests for Endpoint`)
 
@@ -49,6 +52,5 @@ Write clean and simple docs in the `docs` folder.
 [2]: http://www.scalatest.org/
 [3]: https://www.scalacheck.org/
 [4]: http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html
-[5]: https://waffle.io/finagle/finch
+[5]: https://github.com/finagle/finch/issues
 [6]: https://gitter.im/finagle/finch
-
